@@ -5,7 +5,7 @@ ADB Debugging must be enabled.
 
 from .androidtv.androidtv_async import AndroidTVAsync
 from .basetv.basetv_async import BaseTVAsync
-from .constants import DEFAULT_AUTH_TIMEOUT_S, DEFAULT_TRANSPORT_TIMEOUT_S
+from .constants import DEFAULT_AUTH_TIMEOUT_S, DEFAULT_CONNECTION_TYPE, DEFAULT_TRANSPORT_TIMEOUT_S
 from .firetv.firetv_async import FireTVAsync
 
 
@@ -21,6 +21,7 @@ async def setup(
     signer=None,
     transport_timeout_s=DEFAULT_TRANSPORT_TIMEOUT_S,
     log_errors=True,
+    connection_type=DEFAULT_CONNECTION_TYPE,
 ):
     """Connect to a device and determine whether it's an Android TV or an Amazon Fire TV.
 
@@ -48,6 +49,10 @@ async def setup(
         Transport timeout (in seconds)
     log_errors: bool
         Whether connection errors should be logged
+    connection_type : str
+        ``"tcp"`` for the legacy ``adb tcpip`` flow, or ``"tls"`` for modern
+        Android (11+) wireless-debugging.  See
+        :py:data:`androidtv.constants.VALID_CONNECTION_TYPES`.
 
     Returns
     -------
@@ -56,7 +61,10 @@ async def setup(
 
     """
     if device_class == "androidtv":
-        atv = AndroidTVAsync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        atv = AndroidTVAsync(
+            host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+            connection_type=connection_type,
+        )
         await atv.adb_connect(
             log_errors=log_errors, auth_timeout_s=auth_timeout_s, transport_timeout_s=transport_timeout_s
         )
@@ -65,7 +73,10 @@ async def setup(
         return atv
 
     if device_class == "firetv":
-        ftv = FireTVAsync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        ftv = FireTVAsync(
+            host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+            connection_type=connection_type,
+        )
         await ftv.adb_connect(
             log_errors=log_errors, auth_timeout_s=auth_timeout_s, transport_timeout_s=transport_timeout_s
         )
@@ -76,7 +87,10 @@ async def setup(
     if device_class != "auto":
         raise ValueError("`device_class` must be 'androidtv', 'firetv', or 'auto'.")
 
-    aftv = BaseTVAsync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+    aftv = BaseTVAsync(
+        host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+        connection_type=connection_type,
+    )
 
     # establish the ADB connection
     await aftv.adb_connect(

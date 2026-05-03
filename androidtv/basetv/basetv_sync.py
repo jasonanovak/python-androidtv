@@ -75,16 +75,27 @@ class BaseTVSync(BaseTV):
         adb_server_port=5037,
         state_detection_rules=None,
         signer=None,
+        connection_type=constants.DEFAULT_CONNECTION_TYPE,
     ):
         # the handler for ADB commands
         if not adb_server_ip:
             # python-adb
-            adb = ADBPythonSync(host, port, adbkey, signer)
+            adb = ADBPythonSync(host, port, adbkey, signer, connection_type=connection_type)
         else:
             # pure-python-adb
             adb = ADBServerSync(host, port, adb_server_ip, adb_server_port)
 
-        BaseTV.__init__(self, adb, host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules)
+        BaseTV.__init__(
+            self,
+            adb,
+            host,
+            port,
+            adbkey,
+            adb_server_ip,
+            adb_server_port,
+            state_detection_rules,
+            connection_type=connection_type,
+        )
 
     # ======================================================================= #
     #                                                                         #

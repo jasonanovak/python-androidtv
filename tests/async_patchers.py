@@ -16,6 +16,7 @@ KEY_PYTHON = "python"
 KEY_SERVER = "server"
 
 ADB_DEVICE_TCP_ASYNC_FAKE = "AdbDeviceTcpAsyncFake"
+ADB_DEVICE_TLS_ASYNC_FAKE = "AdbDeviceTlsAsyncFake"
 CLIENT_ASYNC_FAKE_SUCCESS = "ClientAsyncFakeSuccess"
 CLIENT_ASYNC_FAKE_FAIL = "ClientAsyncFakeFail"
 DEVICE_ASYNC_FAKE = "DeviceAsyncFake"
@@ -49,6 +50,15 @@ class AdbDeviceTcpAsyncFake(object):
     async def shell(self, cmd, *args, **kwargs):
         """Send an ADB shell command."""
         return None
+
+
+class AdbDeviceTlsAsyncFake(AdbDeviceTcpAsyncFake):
+    """A fake of the `adb_shell.adb_device_async.AdbDeviceTlsAsync` class.
+
+    Behaviorally identical to ``AdbDeviceTcpAsyncFake``; the only thing the
+    ``ADBPythonAsync`` manager treats differently for TLS is the kwargs it
+    passes to ``connect()`` (``rsa_keys=[]`` + ``tls_priv_pem=...``).
+    """
 
 
 class ClientAsyncFakeSuccess(object):
@@ -172,6 +182,10 @@ PATCH_PULL = {
 }
 
 PATCH_ADB_DEVICE_TCP = patch("androidtv.adb_manager.adb_manager_async.AdbDeviceTcpAsync", AdbDeviceTcpAsyncFake)
+
+PATCH_ADB_DEVICE_TLS = patch(
+    "androidtv.adb_manager.adb_manager_async.AdbDeviceTlsAsync", AdbDeviceTlsAsyncFake
+)
 
 PATCH_ADB_SERVER_RUNTIME_ERROR = async_patch(
     "{}.{}.device".format(__name__, CLIENT_ASYNC_FAKE_SUCCESS), side_effect=RuntimeError

@@ -12,6 +12,7 @@ KEY_PYTHON = "python"
 KEY_SERVER = "server"
 
 ADB_DEVICE_TCP_FAKE = "AdbDeviceTcpFake"
+ADB_DEVICE_TLS_FAKE = "AdbDeviceTlsFake"
 CLIENT_FAKE_SUCCESS = "ClientFakeSuccess"
 CLIENT_FAKE_FAIL = "ClientFakeFail"
 DEVICE_FAKE = "DeviceFake"
@@ -41,6 +42,15 @@ class AdbDeviceTcpFake(object):
     def shell(self, cmd, *args, **kwargs):
         """Send an ADB shell command."""
         return None
+
+
+class AdbDeviceTlsFake(AdbDeviceTcpFake):
+    """A fake of the `adb_shell.adb_device.AdbDeviceTls` class.
+
+    Behaviorally identical to ``AdbDeviceTcpFake``; the only thing the
+    ``ADBPythonSync`` manager treats differently for TLS is the kwargs it
+    passes to ``connect()`` (``rsa_keys=[]`` + ``tls_priv_pem=...``).
+    """
 
 
 class ClientFakeSuccess(object):
@@ -166,6 +176,8 @@ PATCH_PULL = {
 PATCH_ADB_DEVICE_TCP = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceTcp", AdbDeviceTcpFake)
 
 PATCH_ADB_DEVICE_USB = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceUsb", AdbDeviceTcpFake)
+
+PATCH_ADB_DEVICE_TLS = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceTls", AdbDeviceTlsFake)
 
 PATCH_ADB_SERVER_RUNTIME_ERROR = patch("{}.{}.device".format(__name__, CLIENT_FAKE_SUCCESS), side_effect=RuntimeError)
 

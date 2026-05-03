@@ -6,11 +6,11 @@ ADB Debugging must be enabled.
 from .androidtv.androidtv_sync import AndroidTVSync
 from .basetv.basetv import state_detection_rules_validator
 from .basetv.basetv_sync import BaseTVSync
-from .constants import DEFAULT_AUTH_TIMEOUT_S, DEFAULT_TRANSPORT_TIMEOUT_S
+from .constants import DEFAULT_AUTH_TIMEOUT_S, DEFAULT_CONNECTION_TYPE, DEFAULT_TRANSPORT_TIMEOUT_S
 from .firetv.firetv_sync import FireTVSync
 
 
-__version__ = "0.0.75"
+__version__ = "0.0.76"
 
 
 def setup(
@@ -25,6 +25,7 @@ def setup(
     signer=None,
     transport_timeout_s=DEFAULT_TRANSPORT_TIMEOUT_S,
     log_errors=True,
+    connection_type=DEFAULT_CONNECTION_TYPE,
 ):
     """Connect to a device and determine whether it's an Android TV or an Amazon Fire TV.
 
@@ -52,6 +53,10 @@ def setup(
         Transport timeout (in seconds)
     log_errors: bool
         Whether connection errors should be logged
+    connection_type : str
+        ``"tcp"`` for the legacy ``adb tcpip`` flow, or ``"tls"`` for modern
+        Android (11+) wireless-debugging.  See
+        :py:data:`androidtv.constants.VALID_CONNECTION_TYPES`.
 
     Returns
     -------
@@ -60,14 +65,20 @@ def setup(
 
     """
     if device_class == "androidtv":
-        atv = AndroidTVSync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        atv = AndroidTVSync(
+            host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+            connection_type=connection_type,
+        )
         atv.adb_connect(log_errors=log_errors, auth_timeout_s=auth_timeout_s, transport_timeout_s=transport_timeout_s)
         atv.get_device_properties()
         atv.get_installed_apps()
         return atv
 
     if device_class == "firetv":
-        ftv = FireTVSync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        ftv = FireTVSync(
+            host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+            connection_type=connection_type,
+        )
         ftv.adb_connect(log_errors=log_errors, auth_timeout_s=auth_timeout_s, transport_timeout_s=transport_timeout_s)
         ftv.get_device_properties()
         ftv.get_installed_apps()
@@ -76,7 +87,10 @@ def setup(
     if device_class != "auto":
         raise ValueError("`device_class` must be 'androidtv', 'firetv', or 'auto'.")
 
-    aftv = BaseTVSync(host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+    aftv = BaseTVSync(
+        host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer,
+        connection_type=connection_type,
+    )
 
     # establish the ADB connection
     aftv.adb_connect(log_errors=log_errors, auth_timeout_s=auth_timeout_s, transport_timeout_s=transport_timeout_s)

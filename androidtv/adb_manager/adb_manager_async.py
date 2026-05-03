@@ -13,15 +13,23 @@ from adb_shell.adb_device import AdbDeviceUsb
 from adb_shell.adb_device_async import AdbDeviceTcpAsync
 from adb_shell.auth.sign_pythonrsa import PythonRSASigner
 from adb_shell.constants import DEFAULT_PUSH_MODE, DEFAULT_READ_TIMEOUT_S
+
+try:
+    from adb_shell.adb_device_async import AdbDeviceTlsAsync
+except ImportError:  # pragma: no cover - exercised only when fork is older
+    AdbDeviceTlsAsync = None
 import aiofiles
 import async_timeout
 from ppadb.client import Client
 
 from ..constants import (
+    CONN_TYPE_TLS,
     DEFAULT_ADB_TIMEOUT_S,
     DEFAULT_AUTH_TIMEOUT_S,
+    DEFAULT_CONNECTION_TYPE,
     DEFAULT_LOCK_TIMEOUT_S,
     DEFAULT_TRANSPORT_TIMEOUT_S,
+    VALID_CONNECTION_TYPES,
 )
 from ..exceptions import LockNotAcquiredException
 
@@ -191,18 +199,38 @@ class ADBPythonAsync(object):
         The path to the ``adbkey`` file for ADB authentication
     signer : PythonRSASigner, None
         The signer for the ADB keys, as loaded by :meth:`ADBPythonAsync.load_adbkey`
+    connection_type : str
+        ``"tcp"`` for the legacy ``adb tcpip`` flow, or ``"tls"`` for modern
+        Android (11+) wireless-debugging.  Ignored when ``host`` is empty
+        (USB).  See :py:data:`androidtv.constants.VALID_CONNECTION_TYPES`.
 
     """
 
-    def __init__(self, host, port, adbkey="", signer=None):
+    def __init__(self, host, port, adbkey="", signer=None, connection_type=DEFAULT_CONNECTION_TYPE):
+        if connection_type not in VALID_CONNECTION_TYPES:
+            raise ValueError(
+                f"`connection_type` must be one of {VALID_CONNECTION_TYPES}; got {connection_type!r}"
+            )
+
         self.host = host
         self.port = int(port)
         self.adbkey = adbkey
+        self.connection_type = connection_type
 
         if host:
-            self._adb = AdbDeviceTcpAsync(
-                host=self.host, port=self.port, default_transport_timeout_s=DEFAULT_ADB_TIMEOUT_S
-            )
+            if connection_type == CONN_TYPE_TLS:
+                if AdbDeviceTlsAsync is None:
+                    raise ImportError(
+                        "connection_type='tls' requires `adb_shell` with TLS / Wi-Fi support. "
+                        "Install androidtv with the [wifi] extra."
+                    )
+                self._adb = AdbDeviceTlsAsync(
+                    host=self.host, port=self.port, default_transport_timeout_s=DEFAULT_ADB_TIMEOUT_S
+                )
+            else:
+                self._adb = AdbDeviceTcpAsync(
+                    host=self.host, port=self.port, default_transport_timeout_s=DEFAULT_ADB_TIMEOUT_S
+                )
         else:
             self._adb = AdbDeviceUsbAsync(default_transport_timeout_s=DEFAULT_ADB_TIMEOUT_S)
 
@@ -254,8 +282,25 @@ class ADBPythonAsync(object):
             async with _acquire(self._adb_lock):
                 # Catch exceptions
                 try:
+                    # Modern Android wireless-debugging (TLS): the device's
+                    # cert / key is the user's adbkey, passed as PEM bytes.
+                    # No legacy AUTH challenge is signed on this path.
+                    if self.connection_type == CONN_TYPE_TLS:
+                        if not self.adbkey:
+                            raise ValueError(
+                                "connection_type='tls' requires `adbkey` to be set"
+                            )
+                        async with aiofiles.open(self.adbkey, "rb") as f:
+                            tls_priv_pem = await f.read()
+                        await self._adb.connect(
+                            rsa_keys=[],
+                            transport_timeout_s=transport_timeout_s,
+                            auth_timeout_s=auth_timeout_s,
+                            tls_priv_pem=tls_priv_pem,
+                        )
+
                     # Connect with authentication
-                    if self.adbkey:
+                    elif self.adbkey:
                         if not self._signer:
                             self._signer = await self.load_adbkey(self.adbkey)
 

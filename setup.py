@@ -7,7 +7,7 @@ with open("README.rst") as f:
 
 setup(
     name="androidtv",
-    version="0.0.75",
+    version="0.0.76",
     description="Communicate with an Android TV or Fire TV device via ADB over a network.",
     long_description=readme,
     keywords=["adb", "android", "androidtv", "firetv"],
@@ -16,8 +16,15 @@ setup(
     author="Jeff Irion",
     author_email="jefflirion@users.noreply.github.com",
     packages=["androidtv", "androidtv.adb_manager", "androidtv.basetv", "androidtv.androidtv", "androidtv.firetv"],
-    install_requires=["adb-shell>=0.4.0", "pure-python-adb>=0.3.0.dev0"],
-    extras_require={"async": ["aiofiles>=0.4.0", "async_timeout>=3.0.0"], "usb": ["adb-shell[usb]>=0.4.0"]},
+    install_requires=[
+        "adb-shell @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support",
+        "pure-python-adb>=0.3.0.dev0",
+    ],
+    extras_require={
+        "async": ["aiofiles>=0.4.0", "async_timeout>=3.0.0"],
+        "usb": ["adb-shell[usb] @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support"],
+        "wifi": ["adb-shell[wifi] @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support"],
+    },
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

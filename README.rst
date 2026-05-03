@@ -44,6 +44,42 @@ To utilize the async version of this code, you must install into a Python 3.7+ e
    pip install androidtv[async]
 
 
+ADB Wi-Fi (TLS) support
+-----------------------
+
+Modern Android (11+) deprecates the legacy ``adb tcpip`` flow in favor
+of ADB Wi-Fi, which uses a one-shot pairing handshake plus a TLS 1.3
+data channel on a randomized port advertised over mDNS.
+
+Install with the ``wifi`` extra:
+
+.. code-block::
+
+   pip install androidtv[wifi]
+
+Then either pass ``connection_type="tls"`` to ``setup()`` /
+``BaseTVAsync`` / etc., or construct the device classes directly:
+
+.. code-block:: python
+
+   from androidtv import setup
+   from androidtv.wifi import pair, discover_connect_services
+
+   # One-time pairing — user opens "Pair device with pairing code"
+   # in Wireless debugging settings on the TV and reads off the code.
+   pair(host=PAIR_IP, port=PAIR_PORT, pairing_code="123456",
+        adbkey="/path/to/adbkey")
+
+   # Subsequent connects.  Discover the (random) TLS port via mDNS.
+   services = discover_connect_services(timeout_s=4.0)
+   tv = setup(host=services[0].host, port=services[0].port,
+              adbkey="/path/to/adbkey", connection_type="tls")
+
+The legacy ``connection_type="tcp"`` path (default) is unchanged —
+existing users on older Android versions or pre-paired devices using
+``adb tcpip`` need to do nothing.
+
+
 ADB Intents and Commands
 ------------------------
 

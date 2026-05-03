@@ -6,6 +6,7 @@ ADB Debugging must be enabled.
 import logging
 
 from .base_androidtv import BaseAndroidTV
+from .. import constants
 from ..basetv.basetv_async import BaseTVAsync
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,8 +43,19 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         adb_server_port=5037,
         state_detection_rules=None,
         signer=None,
+        connection_type=constants.DEFAULT_CONNECTION_TYPE,
     ):  # pylint: disable=super-init-not-called
-        BaseTVAsync.__init__(self, host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        BaseTVAsync.__init__(
+            self,
+            host,
+            port,
+            adbkey,
+            adb_server_ip,
+            adb_server_port,
+            state_detection_rules,
+            signer,
+            connection_type=connection_type,
+        )
 
     @classmethod
     def from_base(cls, base_tv):
@@ -68,6 +80,7 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
             base_tv.adb_server_ip,
             base_tv.adb_server_port,
             base_tv._state_detection_rules,
+            connection_type=base_tv.connection_type,
         )
         atv._adb = base_tv._adb
         atv.device_properties = base_tv.device_properties
