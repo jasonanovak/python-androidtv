@@ -73,7 +73,7 @@ def _setup_logging(verbose):
 
 async def cmd_discover(args):
     """Sweep the LAN for ADB Wi-Fi services and print what we find."""
-    from androidtv.wifi import (
+    from androidtv_wifi.wifi import (
         discover_pairing_services_async,
         discover_connect_services_async,
     )
@@ -102,7 +102,7 @@ async def cmd_discover(args):
 
 async def cmd_pair(args):
     """Pair with a device using the 6-digit code shown in its dialog."""
-    from androidtv.wifi import pair_async, PairingException
+    from androidtv_wifi.wifi import pair_async, PairingException
 
     print(f"[pair] pairing with {args.host}:{args.port} using code {args.code!r}")
     try:
@@ -126,7 +126,7 @@ async def cmd_pair(args):
 
 async def _connect_and_probe(host, port, adbkey, connection_type, transport_timeout, auth_timeout):
     """Shared connect+probe used by `connect` and `legacy`."""
-    from androidtv import setup_async
+    from androidtv_wifi import setup_async
 
     print(f"[connect] {connection_type.upper()} {host}:{port} adbkey={adbkey}")
     tv = await setup_async.setup(
@@ -177,7 +177,7 @@ async def cmd_legacy(args):
 
 async def cmd_all(args):
     """Discover, then connect to the first TLS service found."""
-    from androidtv.wifi import discover_connect_services_async
+    from androidtv_wifi.wifi import discover_connect_services_async
 
     print("[all] step 1: discover")
     services = await discover_connect_services_async(timeout_s=args.timeout)
@@ -209,7 +209,7 @@ def _build_parser():
         epilog=__doc__,
     )
     p.add_argument("-v", "--verbose", action="store_true",
-                   help="enable DEBUG logging from adb_shell / androidtv")
+                   help="enable DEBUG logging from adb_shell_wifi / androidtv")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     d = sub.add_parser("discover", help="sweep the LAN for ADB Wi-Fi services")

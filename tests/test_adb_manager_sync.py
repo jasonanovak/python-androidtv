@@ -9,9 +9,9 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from adb_shell.transport.tcp_transport import TcpTransport
-from androidtv.adb_manager.adb_manager_sync import _acquire, ADBPythonSync, ADBServerSync
-from androidtv.exceptions import LockNotAcquiredException
+from adb_shell_wifi.transport.tcp_transport import TcpTransport
+from androidtv_wifi.adb_manager.adb_manager_sync import _acquire, ADBPythonSync, ADBServerSync
+from androidtv_wifi.exceptions import LockNotAcquiredException
 from . import patchers
 
 
@@ -296,13 +296,13 @@ class TestADBPythonSyncWithAuthentication(unittest.TestCase):
     def test_connect_success_with_priv_key(self):
         """Test when the connect attempt is successful when using a private key."""
         with patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_sync.open", open_priv
-        ), patch("androidtv.adb_manager.adb_manager_sync.PythonRSASigner", return_value="TEST"):
+            "androidtv_wifi.adb_manager.adb_manager_sync.open", open_priv
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.PythonRSASigner", return_value="TEST"):
             self.assertTrue(self.adb.connect())
             self.assertTrue(self.adb.available)
 
         with patchers.patch_connect(True)[self.PATCH_KEY]:
-            with patch("androidtv.adb_manager.adb_manager_sync.open") as patch_open:
+            with patch("androidtv_wifi.adb_manager.adb_manager_sync.open") as patch_open:
                 self.assertTrue(self.adb.connect())
                 self.assertTrue(self.adb.available)
                 assert not patch_open.called
@@ -310,8 +310,8 @@ class TestADBPythonSyncWithAuthentication(unittest.TestCase):
     def test_connect_success_with_priv_pub_key(self):
         """Test when the connect attempt is successful when using private and public keys."""
         with patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_sync.open", open_priv_pub
-        ), patch("androidtv.adb_manager.adb_manager_sync.PythonRSASigner", return_value=None):
+            "androidtv_wifi.adb_manager.adb_manager_sync.open", open_priv_pub
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.PythonRSASigner", return_value=None):
             self.assertTrue(self.adb.connect())
             self.assertTrue(self.adb.available)
 
@@ -365,7 +365,7 @@ class TestADBPythonSyncTls(unittest.TestCase):
 
         with patch(
             "tests.patchers.{}.connect".format(patchers.ADB_DEVICE_TLS_FAKE), fake_connect
-        ), patch("androidtv.adb_manager.adb_manager_sync.open", mock_open(read_data=pem)):
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.open", mock_open(read_data=pem)):
             self.assertTrue(self.adb.connect())
 
         self.assertEqual(captured.get("rsa_keys"), [])

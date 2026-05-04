@@ -10,10 +10,10 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from adb_shell.exceptions import InvalidChecksumError, InvalidCommandError, InvalidResponseError, TcpTimeoutException
-from androidtv import setup
-from androidtv.constants import APPS, KEYS, STATE_IDLE, STATE_OFF, STATE_PAUSED, STATE_PLAYING, STATE_STANDBY
-from androidtv.exceptions import LockNotAcquiredException
+from adb_shell_wifi.exceptions import InvalidChecksumError, InvalidCommandError, InvalidResponseError, TcpTimeoutException
+from androidtv_wifi import setup
+from androidtv_wifi.constants import APPS, KEYS, STATE_IDLE, STATE_OFF, STATE_PAUSED, STATE_PLAYING, STATE_STANDBY
+from androidtv_wifi.exceptions import LockNotAcquiredException
 
 from . import patchers
 
@@ -572,7 +572,7 @@ class TestADBCommandAndFileSync(unittest.TestCase):
             aftv = setup("HOST", 5555, adb_server_ip="ADB_SERVER_IP", device_class="androidtv")
             self.aftv = AndroidTVDevice(aftv, "Fake Android TV", {}, True, None, None)
 
-        with patch("androidtv.basetv.basetv_sync.BaseTVSync.adb_shell", return_value=response) as patch_shell:
+        with patch("androidtv_wifi.basetv.basetv_sync.BaseTVSync.adb_shell", return_value=response) as patch_shell:
             self.aftv.adb_command(command)
 
             patch_shell.assert_called_with(command)
@@ -588,7 +588,7 @@ class TestADBCommandAndFileSync(unittest.TestCase):
             aftv = setup("HOST", 5555, adb_server_ip="ADB_SERVER_IP", device_class="androidtv")
             self.aftv = AndroidTVDevice(aftv, "Fake Android TV", {}, True, None, None)
 
-        with patch("androidtv.basetv.basetv_sync.BaseTVSync.adb_shell", return_value=response) as patch_shell:
+        with patch("androidtv_wifi.basetv.basetv_sync.BaseTVSync.adb_shell", return_value=response) as patch_shell:
             self.aftv.adb_command(command)
 
             patch_shell.assert_called_with("input keyevent {}".format(self.aftv._keys[command]))
@@ -605,7 +605,7 @@ class TestADBCommandAndFileSync(unittest.TestCase):
             self.aftv = AndroidTVDevice(aftv, "Fake Android TV", {}, True, None, None)
 
         with patch(
-            "androidtv.androidtv.androidtv_sync.AndroidTVSync.get_properties_dict", return_value=response
+            "androidtv_wifi.androidtv.androidtv_sync.AndroidTVSync.get_properties_dict", return_value=response
         ) as patch_get_props:
             self.aftv.adb_command(command)
 
@@ -624,7 +624,7 @@ class TestADBCommandAndFileSync(unittest.TestCase):
             self.aftv.update()
             assert self.aftv.state == STATE_OFF
 
-        with patch("androidtv.androidtv.androidtv_sync.AndroidTVSync.update", side_effect=LockNotAcquiredException):
+        with patch("androidtv_wifi.androidtv.androidtv_sync.AndroidTVSync.update", side_effect=LockNotAcquiredException):
             with patchers.patch_shell("1")[patch_key]:
                 self.aftv.update()
                 assert self.aftv.state == STATE_OFF

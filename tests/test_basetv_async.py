@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 sys.path.insert(0, "..")
 
-import androidtv
-from androidtv import constants
-from androidtv.basetv.basetv_async import BaseTVAsync
+import androidtv_wifi
+from androidtv_wifi import constants
+from androidtv_wifi.basetv.basetv_async import BaseTVAsync
 
 from . import async_patchers
 from .async_wrapper import awaiter

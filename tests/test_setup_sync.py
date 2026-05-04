@@ -11,9 +11,9 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from androidtv import setup
-from androidtv.androidtv.androidtv_sync import AndroidTVSync
-from androidtv.firetv.firetv_sync import FireTVSync
+from androidtv_wifi import setup
+from androidtv_wifi.androidtv.androidtv_sync import AndroidTVSync
+from androidtv_wifi.firetv.firetv_sync import FireTVSync
 from . import patchers
 
 

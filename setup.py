@@ -1,4 +1,4 @@
-"""setup.py file for the androidtv package."""
+"""setup.py file for the androidtv_wifi package."""
 
 from setuptools import setup
 
@@ -6,24 +6,25 @@ with open("README.rst") as f:
     readme = f.read()
 
 setup(
-    name="androidtv",
-    version="0.0.76",
-    description="Communicate with an Android TV or Fire TV device via ADB over a network.",
+    name="androidtv-wifi",
+    version="0.1.0",
+    description="Fork of androidtv (python-androidtv) that uses adb-shell-wifi to add modern ADB Wi-Fi (TLS) pairing support.",
     long_description=readme,
-    keywords=["adb", "android", "androidtv", "firetv"],
-    url="https://github.com/JeffLIrion/python-androidtv/",
+    long_description_content_type="text/x-rst",
+    keywords=["adb", "android", "androidtv", "firetv", "wifi", "tls"],
+    url="https://github.com/jasonanovak/python-androidtv",
     license="MIT",
-    author="Jeff Irion",
-    author_email="jefflirion@users.noreply.github.com",
-    packages=["androidtv", "androidtv.adb_manager", "androidtv.basetv", "androidtv.androidtv", "androidtv.firetv"],
+    author="Jason Novak",
+    author_email="jason@nvkmail.com",
+    packages=["androidtv_wifi", "androidtv_wifi.adb_manager", "androidtv_wifi.basetv", "androidtv_wifi.androidtv", "androidtv_wifi.firetv"],
     install_requires=[
-        "adb-shell @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support",
+        "adb-shell-wifi==0.5.0",
         "pure-python-adb>=0.3.0.dev0",
     ],
     extras_require={
         "async": ["aiofiles>=0.4.0", "async_timeout>=3.0.0"],
-        "usb": ["adb-shell[usb] @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support"],
-        "wifi": ["adb-shell[wifi] @ git+https://github.com/jasonanovak/adb_shell.git@wifi_support"],
+        "usb": ["adb-shell-wifi[usb]==0.5.0"],
+        "wifi": ["adb-shell-wifi[wifi]==0.5.0"],
     },
     classifiers=[
         "License :: OSI Approved :: MIT License",

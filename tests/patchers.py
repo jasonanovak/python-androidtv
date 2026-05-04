@@ -115,11 +115,11 @@ def patch_connect(success):
     if success:
         return {
             KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_FAKE), connect_success_python),
-            KEY_SERVER: patch("androidtv.adb_manager.adb_manager_sync.Client", ClientFakeSuccess),
+            KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_sync.Client", ClientFakeSuccess),
         }
     return {
         KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_FAKE), connect_fail_python),
-        KEY_SERVER: patch("androidtv.adb_manager.adb_manager_sync.Client", ClientFakeFail),
+        KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_sync.Client", ClientFakeFail),
     }
 
 
@@ -173,11 +173,11 @@ PATCH_PULL = {
     KEY_SERVER: patch("{}.{}.pull".format(__name__, DEVICE_FAKE)),
 }
 
-PATCH_ADB_DEVICE_TCP = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceTcp", AdbDeviceTcpFake)
+PATCH_ADB_DEVICE_TCP = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceTcp", AdbDeviceTcpFake)
 
-PATCH_ADB_DEVICE_USB = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceUsb", AdbDeviceTcpFake)
+PATCH_ADB_DEVICE_USB = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceUsb", AdbDeviceTcpFake)
 
-PATCH_ADB_DEVICE_TLS = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceTls", AdbDeviceTlsFake)
+PATCH_ADB_DEVICE_TLS = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceTls", AdbDeviceTlsFake)
 
 PATCH_ADB_SERVER_RUNTIME_ERROR = patch("{}.{}.device".format(__name__, CLIENT_FAKE_SUCCESS), side_effect=RuntimeError)
 

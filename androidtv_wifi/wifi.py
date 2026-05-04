@@ -33,7 +33,7 @@ _WIFI_EXTRA_HINT = (
 
 
 try:
-    from adb_shell.pairing import (  # noqa: F401  (re-exported)
+    from adb_shell_wifi.pairing import (  # noqa: F401  (re-exported)
         PairingException,
         PeerInfo,
         pair as _pair,
@@ -49,7 +49,7 @@ except ImportError:  # pragma: no cover - exercised only without [wifi]
     _PAIRING_AVAILABLE = False
 
 try:
-    from adb_shell.mdns import (  # noqa: F401  (re-exported)
+    from adb_shell_wifi.mdns import (  # noqa: F401  (re-exported)
         AdbService,
         SERVICE_TYPE_LEGACY,
         SERVICE_TYPE_PAIRING,

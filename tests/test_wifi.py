@@ -13,7 +13,7 @@ from unittest.mock import mock_open, patch
 
 sys.path.insert(0, "..")
 
-from androidtv import wifi
+from androidtv_wifi import wifi
 
 
 PEM_PRIV = b"-----BEGIN PRIVATE KEY-----\nfake-priv\n-----END PRIVATE KEY-----\n"
@@ -66,8 +66,8 @@ class TestPairSync(unittest.TestCase):
             return "PEER_INFO_SENTINEL"
 
         files = {"adbkey": PEM_PRIV, "adbkey.pub": PEM_PUB}
-        with patch("androidtv.wifi._pair", fake_pair), patch(
-            "androidtv.wifi.open", _sync_open_factory(files)
+        with patch("androidtv_wifi.wifi._pair", fake_pair), patch(
+            "androidtv_wifi.wifi.open", _sync_open_factory(files)
         ):
             result = wifi.pair("HOST", 1234, "ABCDEF", "adbkey", timeout_s=7.5)
 
@@ -80,7 +80,7 @@ class TestPairSync(unittest.TestCase):
         self.assertEqual(captured["timeout_s"], 7.5)
 
     def test_pair_raises_when_extra_missing(self):
-        with patch("androidtv.wifi._PAIRING_AVAILABLE", False):
+        with patch("androidtv_wifi.wifi._PAIRING_AVAILABLE", False):
             with self.assertRaises(ImportError):
                 wifi.pair("HOST", 1234, "ABCDEF", "adbkey")
 
@@ -98,8 +98,8 @@ class TestPairAsync(unittest.TestCase):
             return "PEER_INFO_SENTINEL"
 
         files = {"adbkey": PEM_PRIV, "adbkey.pub": PEM_PUB}
-        with patch("androidtv.wifi._pair_async", fake_pair_async), patch(
-            "androidtv.wifi.aiofiles.open", _async_open_factory(files)
+        with patch("androidtv_wifi.wifi._pair_async", fake_pair_async), patch(
+            "androidtv_wifi.wifi.aiofiles.open", _async_open_factory(files)
         ):
             result = _await(wifi.pair_async("HOST", 1234, "ABCDEF", "adbkey", timeout_s=7.5))
 
@@ -113,13 +113,13 @@ class TestDiscovery(unittest.TestCase):
     """Discovery wrappers forward timeout to the underlying adb_shell helpers."""
 
     def test_discover_connect_services_forwards_timeout(self):
-        with patch("androidtv.wifi._discover_connect_services", return_value=["a", "b"]) as m:
+        with patch("androidtv_wifi.wifi._discover_connect_services", return_value=["a", "b"]) as m:
             result = wifi.discover_connect_services(timeout_s=2.5)
         self.assertEqual(result, ["a", "b"])
         m.assert_called_once_with(timeout_s=2.5)
 
     def test_discover_pairing_services_forwards_timeout(self):
-        with patch("androidtv.wifi._discover_pairing_services", return_value=[]) as m:
+        with patch("androidtv_wifi.wifi._discover_pairing_services", return_value=[]) as m:
             wifi.discover_pairing_services(timeout_s=1.0)
         m.assert_called_once_with(timeout_s=1.0)
 
@@ -127,12 +127,12 @@ class TestDiscovery(unittest.TestCase):
         async def fake(timeout_s):
             return ["service-x"]
 
-        with patch("androidtv.wifi._discover_connect_services_async", fake):
+        with patch("androidtv_wifi.wifi._discover_connect_services_async", fake):
             result = _await(wifi.discover_connect_services_async(timeout_s=3.0))
         self.assertEqual(result, ["service-x"])
 
     def test_discover_raises_when_extra_missing(self):
-        with patch("androidtv.wifi._MDNS_AVAILABLE", False):
+        with patch("androidtv_wifi.wifi._MDNS_AVAILABLE", False):
             with self.assertRaises(ImportError):
                 wifi.discover_connect_services()
             with self.assertRaises(ImportError):

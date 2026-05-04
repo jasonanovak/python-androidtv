@@ -1,32 +1,25 @@
-python-androidtv
-================
+python-androidtv-wifi
+=====================
 
-.. image:: https://travis-ci.com/JeffLIrion/python-androidtv.svg?branch=master
-   :target: https://travis-ci.com/JeffLIrion/python-androidtv
-   :alt: Build Status
-.. image:: https://coveralls.io/repos/github/JeffLIrion/python-androidtv/badge.svg
-   :target: https://coveralls.io/github/JeffLIrion/python-androidtv
-   :alt: Coverage Status
-.. image:: https://pepy.tech/badge/androidtv
-   :target: https://pepy.tech/project/androidtv
-   :alt: Downloads
+This package is a fork of `python-androidtv <https://github.com/JeffLIrion/python-androidtv>`_
+that adds support for **modern ADB Wi-Fi pairing** — the 6-digit-code TLS
+pairing flow introduced in Android 11's "Wireless debugging" feature, plus
+the post-pairing TLS data channel and mDNS-based service discovery.
 
+It exists primarily as a testbed for verifying that Wi-Fi pairing support
+can be added to Home Assistant's Android TV integration. If you do not
+need Wi-Fi pairing, install upstream ``androidtv`` instead — the upstream
+package is the canonical home of all non-Wi-Fi functionality.
 
-Contributions Only
-------------------
-
-I no longer have the time to actively work on this project, and so all future development will be from pull requests submitted by the community.  What I will do is:
-
-* review pull requests that pass all of the CI checks
-* publish new releases upon request
-
+Original ``androidtv`` documentation: https://androidtv.readthedocs.io
 
 About
 -----
 
-Documentation for this package can be found at `https://androidtv.readthedocs.io <https://androidtv.readthedocs.io>`_.
-
-``androidtv`` is a Python package that provides state information and control of Android TV and Fire TV devices via ADB.  This package is used by the `Android TV <https://www.home-assistant.io/components/androidtv/>`_ integration in Home Assistant.
+``androidtv_wifi`` is a Python package that provides state information and
+control of Android TV and Fire TV devices via ADB, including modern ADB
+Wi-Fi pairing. It depends on `adb-shell-wifi <https://pypi.org/project/adb-shell-wifi/>`_
+(a corresponding fork of `adb-shell <https://github.com/JeffLIrion/adb_shell>`_).
 
 
 Installation
@@ -34,14 +27,14 @@ Installation
 
 .. code-block::
 
-   pip install androidtv
+   pip install androidtv-wifi
 
 
 To utilize the async version of this code, you must install into a Python 3.7+ environment via:
 
 .. code-block::
 
-   pip install androidtv[async]
+   pip install androidtv-wifi[async]
 
 
 ADB Wi-Fi (TLS) support
@@ -55,15 +48,15 @@ Install with the ``wifi`` extra:
 
 .. code-block::
 
-   pip install androidtv[wifi]
+   pip install androidtv-wifi[wifi]
 
 Then either pass ``connection_type="tls"`` to ``setup()`` /
 ``BaseTVAsync`` / etc., or construct the device classes directly:
 
 .. code-block:: python
 
-   from androidtv import setup
-   from androidtv.wifi import pair, discover_connect_services
+   from androidtv_wifi import setup
+   from androidtv_wifi.wifi import pair, discover_connect_services
 
    # One-time pairing — user opens "Pair device with pairing code"
    # in Wireless debugging settings on the TV and reads off the code.
@@ -88,4 +81,4 @@ A collection of useful intents and commands can be found `here <https://gist.git
 Acknowledgments
 ---------------
 
-This is based on `python-firetv <https://github.com/happyleavesaoc/python-firetv>`_ by happyleavesaoc and the `androidtv component for Home Assistant <https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py>`_ by a1ex4, and it depends on the Python packages `adb-shell <https://github.com/JeffLIrion/adb_shell>`_ (which is based on `python-adb <https://github.com/google/python-adb>`_) and `pure-python-adb <https://github.com/Swind/pure-python-adb>`_.
+This fork is based on `python-androidtv <https://github.com/JeffLIrion/python-androidtv>`_ by Jeff Irion, which itself is based on `python-firetv <https://github.com/happyleavesaoc/python-firetv>`_ by happyleavesaoc and the `androidtv component for Home Assistant <https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py>`_ by a1ex4. This fork depends on `adb-shell-wifi <https://pypi.org/project/adb-shell-wifi/>`_ (a fork of `adb-shell <https://github.com/JeffLIrion/adb_shell>`_, which is based on `python-adb <https://github.com/google/python-adb>`_) and `pure-python-adb <https://github.com/Swind/pure-python-adb>`_.

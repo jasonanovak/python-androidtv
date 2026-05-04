@@ -11,8 +11,8 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from androidtv import constants
-from androidtv.androidtv.androidtv_sync import AndroidTVSync
+from androidtv_wifi import constants
+from androidtv_wifi.androidtv.androidtv_sync import AndroidTVSync
 from . import patchers
 
 
@@ -363,7 +363,7 @@ class TestAndroidTVSyncPython(unittest.TestCase):
             self.assertTupleEqual(state, STATE_NONE)
 
         with patch(
-            "androidtv.androidtv.androidtv_sync.AndroidTVSync.get_properties", return_value=GET_PROPERTIES_OUTPUT
+            "androidtv_wifi.androidtv.androidtv_sync.AndroidTVSync.get_properties", return_value=GET_PROPERTIES_OUTPUT
         ):
             self.atv._state_detection_rules = STATE_DETECTION_RULES1
             state = self.atv.update()
@@ -387,7 +387,7 @@ class TestAndroidTVSyncPython(unittest.TestCase):
 
     def assertUpdate(self, get_properties, update):
         """Check that the results of the `update` method are as expected."""
-        with patch("androidtv.androidtv.androidtv_sync.AndroidTVSync.get_properties", return_value=get_properties):
+        with patch("androidtv_wifi.androidtv.androidtv_sync.AndroidTVSync.get_properties", return_value=get_properties):
             self.assertTupleEqual(self.atv.update(), update)
 
     def test_state_detection(self):

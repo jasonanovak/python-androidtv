@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, "..")
 
-from androidtv.adb_manager.adb_manager_async import _acquire, ADBPythonAsync, ADBServerAsync
-from androidtv.exceptions import LockNotAcquiredException
+from androidtv_wifi.adb_manager.adb_manager_async import _acquire, ADBPythonAsync, ADBServerAsync
+from androidtv_wifi.exceptions import LockNotAcquiredException
 
 from . import async_patchers
 from .async_wrapper import awaiter
@@ -294,7 +294,7 @@ class TestADBPythonUsbAsync(unittest.TestCase):
 
     def test_init(self):
         """Create an `ADBPythonSync` instance with a USB connection."""
-        with patch("androidtv.adb_manager.adb_manager_async.AdbDeviceUsbAsync") as patched:
+        with patch("androidtv_wifi.adb_manager.adb_manager_async.AdbDeviceUsbAsync") as patched:
             ADBPythonAsync("", 5555)
             assert patched.called
 
@@ -333,13 +333,13 @@ class TestADBPythonAsyncWithAuthentication(unittest.TestCase):
     async def test_connect_success_with_priv_key(self):
         """Test when the connect attempt is successful when using a private key."""
         with async_patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_async.aiofiles.open", open_priv
-        ), patch("androidtv.adb_manager.adb_manager_async.PythonRSASigner", return_value="TEST"):
+            "androidtv_wifi.adb_manager.adb_manager_async.aiofiles.open", open_priv
+        ), patch("androidtv_wifi.adb_manager.adb_manager_async.PythonRSASigner", return_value="TEST"):
             self.assertTrue(await self.adb.connect())
             self.assertTrue(self.adb.available)
 
         with async_patchers.patch_connect(True)[self.PATCH_KEY]:
-            with patch("androidtv.adb_manager.adb_manager_async.aiofiles.open") as patch_open:
+            with patch("androidtv_wifi.adb_manager.adb_manager_async.aiofiles.open") as patch_open:
                 self.assertTrue(await self.adb.connect())
                 self.assertTrue(self.adb.available)
                 assert not patch_open.called
@@ -348,8 +348,8 @@ class TestADBPythonAsyncWithAuthentication(unittest.TestCase):
     async def test_connect_success_with_priv_pub_key(self):
         """Test when the connect attempt is successful when using private and public keys."""
         with async_patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_async.aiofiles.open", open_priv_pub
-        ), patch("androidtv.adb_manager.adb_manager_async.PythonRSASigner", return_value=None):
+            "androidtv_wifi.adb_manager.adb_manager_async.aiofiles.open", open_priv_pub
+        ), patch("androidtv_wifi.adb_manager.adb_manager_async.PythonRSASigner", return_value=None):
             self.assertTrue(await self.adb.connect())
             self.assertTrue(self.adb.available)
 
@@ -426,7 +426,7 @@ class TestADBPythonAsyncTls(unittest.TestCase):
         with patch(
             "tests.async_patchers.{}.connect".format(async_patchers.ADB_DEVICE_TLS_ASYNC_FAKE),
             fake_connect,
-        ), patch("androidtv.adb_manager.adb_manager_async.aiofiles.open", _open_pem_factory(pem)):
+        ), patch("androidtv_wifi.adb_manager.adb_manager_async.aiofiles.open", _open_pem_factory(pem)):
             self.assertTrue(await self.adb.connect())
 
         self.assertEqual(captured.get("rsa_keys"), [])
