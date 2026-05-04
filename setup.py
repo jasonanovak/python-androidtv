@@ -7,7 +7,7 @@ with open("README.rst") as f:
 
 setup(
     name="androidtv-wifi",
-    version="0.1.0",
+    version="0.1.1",
     description="Fork of androidtv (python-androidtv) that uses adb-shell-wifi to add modern ADB Wi-Fi (TLS) pairing support.",
     long_description=readme,
     long_description_content_type="text/x-rst",
@@ -24,7 +24,11 @@ setup(
     extras_require={
         "async": ["aiofiles>=0.4.0", "async_timeout>=3.0.0"],
         "usb": ["adb-shell-wifi[usb]==0.5.0"],
-        "wifi": ["adb-shell-wifi[wifi]==0.5.0"],
+        "wifi": [
+            "adb-shell-wifi[wifi]==0.5.0",
+            "aiofiles>=0.4.0",
+            "async_timeout>=3.0.0",
+        ],
     },
     classifiers=[
         "License :: OSI Approved :: MIT License",
