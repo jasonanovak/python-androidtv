@@ -12,6 +12,7 @@ KEY_PYTHON = "python"
 KEY_SERVER = "server"
 
 ADB_DEVICE_TCP_FAKE = "AdbDeviceTcpFake"
+ADB_DEVICE_TLS_FAKE = "AdbDeviceTlsFake"
 CLIENT_FAKE_SUCCESS = "ClientFakeSuccess"
 CLIENT_FAKE_FAIL = "ClientFakeFail"
 DEVICE_FAKE = "DeviceFake"
@@ -41,6 +42,15 @@ class AdbDeviceTcpFake(object):
     def shell(self, cmd, *args, **kwargs):
         """Send an ADB shell command."""
         return None
+
+
+class AdbDeviceTlsFake(AdbDeviceTcpFake):
+    """A fake of the `adb_shell.adb_device.AdbDeviceTls` class.
+
+    Behaviorally identical to ``AdbDeviceTcpFake``; the only thing the
+    ``ADBPythonSync`` manager treats differently for TLS is the kwargs it
+    passes to ``connect()`` (``rsa_keys=[]`` + ``tls_priv_pem=...``).
+    """
 
 
 class ClientFakeSuccess(object):
@@ -105,11 +115,11 @@ def patch_connect(success):
     if success:
         return {
             KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_FAKE), connect_success_python),
-            KEY_SERVER: patch("androidtv.adb_manager.adb_manager_sync.Client", ClientFakeSuccess),
+            KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_sync.Client", ClientFakeSuccess),
         }
     return {
         KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_FAKE), connect_fail_python),
-        KEY_SERVER: patch("androidtv.adb_manager.adb_manager_sync.Client", ClientFakeFail),
+        KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_sync.Client", ClientFakeFail),
     }
 
 
@@ -163,9 +173,11 @@ PATCH_PULL = {
     KEY_SERVER: patch("{}.{}.pull".format(__name__, DEVICE_FAKE)),
 }
 
-PATCH_ADB_DEVICE_TCP = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceTcp", AdbDeviceTcpFake)
+PATCH_ADB_DEVICE_TCP = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceTcp", AdbDeviceTcpFake)
 
-PATCH_ADB_DEVICE_USB = patch("androidtv.adb_manager.adb_manager_sync.AdbDeviceUsb", AdbDeviceTcpFake)
+PATCH_ADB_DEVICE_USB = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceUsb", AdbDeviceTcpFake)
+
+PATCH_ADB_DEVICE_TLS = patch("androidtv_wifi.adb_manager.adb_manager_sync.AdbDeviceTls", AdbDeviceTlsFake)
 
 PATCH_ADB_SERVER_RUNTIME_ERROR = patch("{}.{}.device".format(__name__, CLIENT_FAKE_SUCCESS), side_effect=RuntimeError)
 

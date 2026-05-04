@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from androidtv import constants
+from androidtv_wifi import constants
 
 EXCLUSIONS = {
     "CMD_SUCCESS1",

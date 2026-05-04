@@ -688,3 +688,15 @@ DEFAULT_ADB_TIMEOUT_S = 9.0
 
 #: Default timeout for acquiring the lock that protects ADB commands
 DEFAULT_LOCK_TIMEOUT_S = 3.0
+
+#: Connection type for the legacy ``adb tcpip`` (typically port 5555) flow
+CONN_TYPE_TCP = "tcp"
+
+#: Connection type for modern Android (11+) wireless-debugging (TLS) flow
+CONN_TYPE_TLS = "tls"
+
+#: Valid values for the ``connection_type`` kwarg on the public API
+VALID_CONNECTION_TYPES = (CONN_TYPE_TCP, CONN_TYPE_TLS)
+
+#: Default ``connection_type`` — preserves the legacy behavior
+DEFAULT_CONNECTION_TYPE = CONN_TYPE_TCP

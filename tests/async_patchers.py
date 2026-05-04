@@ -16,6 +16,7 @@ KEY_PYTHON = "python"
 KEY_SERVER = "server"
 
 ADB_DEVICE_TCP_ASYNC_FAKE = "AdbDeviceTcpAsyncFake"
+ADB_DEVICE_TLS_ASYNC_FAKE = "AdbDeviceTlsAsyncFake"
 CLIENT_ASYNC_FAKE_SUCCESS = "ClientAsyncFakeSuccess"
 CLIENT_ASYNC_FAKE_FAIL = "ClientAsyncFakeFail"
 DEVICE_ASYNC_FAKE = "DeviceAsyncFake"
@@ -49,6 +50,15 @@ class AdbDeviceTcpAsyncFake(object):
     async def shell(self, cmd, *args, **kwargs):
         """Send an ADB shell command."""
         return None
+
+
+class AdbDeviceTlsAsyncFake(AdbDeviceTcpAsyncFake):
+    """A fake of the `adb_shell.adb_device_async.AdbDeviceTlsAsync` class.
+
+    Behaviorally identical to ``AdbDeviceTcpAsyncFake``; the only thing the
+    ``ADBPythonAsync`` manager treats differently for TLS is the kwargs it
+    passes to ``connect()`` (``rsa_keys=[]`` + ``tls_priv_pem=...``).
+    """
 
 
 class ClientAsyncFakeSuccess(object):
@@ -113,11 +123,11 @@ def patch_connect(success):
     if success:
         return {
             KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_ASYNC_FAKE), connect_success_python),
-            KEY_SERVER: patch("androidtv.adb_manager.adb_manager_async.ClientAsync", ClientAsyncFakeSuccess),
+            KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_async.ClientAsync", ClientAsyncFakeSuccess),
         }
     return {
         KEY_PYTHON: patch("{}.{}.connect".format(__name__, ADB_DEVICE_TCP_ASYNC_FAKE), connect_fail_python),
-        KEY_SERVER: patch("androidtv.adb_manager.adb_manager_async.ClientAsync", ClientAsyncFakeFail),
+        KEY_SERVER: patch("androidtv_wifi.adb_manager.adb_manager_async.ClientAsync", ClientAsyncFakeFail),
     }
 
 
@@ -171,7 +181,11 @@ PATCH_PULL = {
     KEY_SERVER: async_patch("{}.{}.pull".format(__name__, DEVICE_ASYNC_FAKE)),
 }
 
-PATCH_ADB_DEVICE_TCP = patch("androidtv.adb_manager.adb_manager_async.AdbDeviceTcpAsync", AdbDeviceTcpAsyncFake)
+PATCH_ADB_DEVICE_TCP = patch("androidtv_wifi.adb_manager.adb_manager_async.AdbDeviceTcpAsync", AdbDeviceTcpAsyncFake)
+
+PATCH_ADB_DEVICE_TLS = patch(
+    "androidtv_wifi.adb_manager.adb_manager_async.AdbDeviceTlsAsync", AdbDeviceTlsAsyncFake
+)
 
 PATCH_ADB_SERVER_RUNTIME_ERROR = async_patch(
     "{}.{}.device".format(__name__, CLIENT_ASYNC_FAKE_SUCCESS), side_effect=RuntimeError

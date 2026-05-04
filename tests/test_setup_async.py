@@ -5,9 +5,9 @@ from unittest.mock import patch
 
 sys.path.insert(0, "..")
 
-from androidtv.setup_async import setup
-from androidtv.androidtv.androidtv_async import AndroidTVAsync
-from androidtv.firetv.firetv_async import FireTVAsync
+from androidtv_wifi.setup_async import setup
+from androidtv_wifi.androidtv.androidtv_async import AndroidTVAsync
+from androidtv_wifi.firetv.firetv_async import FireTVAsync
 
 from . import async_patchers
 from .async_wrapper import awaiter

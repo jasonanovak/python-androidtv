@@ -3,15 +3,15 @@ import sys
 import unittest
 
 try:
-    from unittest.mock import patch
+    from unittest.mock import mock_open, patch
 except ImportError:
-    from mock import patch
+    from mock import mock_open, patch
 
 sys.path.insert(0, "..")
 
-from adb_shell.transport.tcp_transport import TcpTransport
-from androidtv.adb_manager.adb_manager_sync import _acquire, ADBPythonSync, ADBServerSync
-from androidtv.exceptions import LockNotAcquiredException
+from adb_shell_wifi.transport.tcp_transport import TcpTransport
+from androidtv_wifi.adb_manager.adb_manager_sync import _acquire, ADBPythonSync, ADBServerSync
+from androidtv_wifi.exceptions import LockNotAcquiredException
 from . import patchers
 
 
@@ -296,13 +296,13 @@ class TestADBPythonSyncWithAuthentication(unittest.TestCase):
     def test_connect_success_with_priv_key(self):
         """Test when the connect attempt is successful when using a private key."""
         with patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_sync.open", open_priv
-        ), patch("androidtv.adb_manager.adb_manager_sync.PythonRSASigner", return_value="TEST"):
+            "androidtv_wifi.adb_manager.adb_manager_sync.open", open_priv
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.PythonRSASigner", return_value="TEST"):
             self.assertTrue(self.adb.connect())
             self.assertTrue(self.adb.available)
 
         with patchers.patch_connect(True)[self.PATCH_KEY]:
-            with patch("androidtv.adb_manager.adb_manager_sync.open") as patch_open:
+            with patch("androidtv_wifi.adb_manager.adb_manager_sync.open") as patch_open:
                 self.assertTrue(self.adb.connect())
                 self.assertTrue(self.adb.available)
                 assert not patch_open.called
@@ -310,8 +310,8 @@ class TestADBPythonSyncWithAuthentication(unittest.TestCase):
     def test_connect_success_with_priv_pub_key(self):
         """Test when the connect attempt is successful when using private and public keys."""
         with patchers.patch_connect(True)[self.PATCH_KEY], patch(
-            "androidtv.adb_manager.adb_manager_sync.open", open_priv_pub
-        ), patch("androidtv.adb_manager.adb_manager_sync.PythonRSASigner", return_value=None):
+            "androidtv_wifi.adb_manager.adb_manager_sync.open", open_priv_pub
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.PythonRSASigner", return_value=None):
             self.assertTrue(self.adb.connect())
             self.assertTrue(self.adb.available)
 
@@ -332,3 +332,47 @@ class TestADBPythonSyncClose(unittest.TestCase):
 
             self.adb.close()
             self.assertFalse(self.adb.available)
+
+
+class TestADBPythonSyncTls(unittest.TestCase):
+    """TLS-path tests for `ADBPythonSync`."""
+
+    PATCH_KEY = "python"
+
+    def setUp(self):
+        """Create a TLS `ADBPythonSync` instance."""
+        with patchers.PATCH_ADB_DEVICE_TLS:
+            self.adb = ADBPythonSync("HOST", 5555, "adbkey", connection_type="tls")
+
+    def test_init_uses_tls_device(self):
+        """The TLS connection type constructs an `AdbDeviceTls`."""
+        self.assertIsInstance(self.adb._adb, patchers.AdbDeviceTlsFake)
+        self.assertEqual(self.adb.connection_type, "tls")
+
+    def test_invalid_connection_type(self):
+        """An unknown connection_type raises ValueError at construction."""
+        with self.assertRaises(ValueError):
+            ADBPythonSync("HOST", 5555, connection_type="bogus")
+
+    def test_connect_passes_tls_priv_pem(self):
+        """The TLS path reads the adbkey and forwards `tls_priv_pem`."""
+        captured = {}
+        pem = b"-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----\n"
+
+        def fake_connect(self_inner, *args, **kwargs):
+            captured.update(kwargs)
+            self_inner.available = True
+
+        with patch(
+            "tests.patchers.{}.connect".format(patchers.ADB_DEVICE_TLS_FAKE), fake_connect
+        ), patch("androidtv_wifi.adb_manager.adb_manager_sync.open", mock_open(read_data=pem)):
+            self.assertTrue(self.adb.connect())
+
+        self.assertEqual(captured.get("rsa_keys"), [])
+        self.assertEqual(captured.get("tls_priv_pem"), pem)
+
+    def test_connect_without_adbkey_returns_false(self):
+        """TLS without an `adbkey` fails (returns False, not an unhandled exception)."""
+        with patchers.PATCH_ADB_DEVICE_TLS:
+            adb = ADBPythonSync("HOST", 5555, connection_type="tls")
+        self.assertFalse(adb.connect(log_errors=False))

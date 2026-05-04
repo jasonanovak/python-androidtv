@@ -7,7 +7,7 @@ import unittest
 
 sys.path.insert(0, "..")
 
-from androidtv import constants
+from androidtv_wifi import constants
 
 from .generate_test_constants import get_cmds
 
@@ -294,7 +294,7 @@ class TestConstants(unittest.TestCase):
         cwd = os.path.join(os.path.dirname(__file__), "..")
         for underscore_name in ["ANDROID_TV", "BASE_TV", "FIRE_TV"]:
             with subprocess.Popen(
-                shlex.split("git grep -l {} -- androidtv/".format(underscore_name)),
+                shlex.split("git grep -l {} -- androidtv_wifi/".format(underscore_name)),
                 cwd=cwd,
             ) as p:
                 self.assertEqual(p.wait(), 1)

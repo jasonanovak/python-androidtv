@@ -11,8 +11,8 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from androidtv import constants, ha_state_detection_rules_validator
-from androidtv.firetv.firetv_sync import FireTVSync
+from androidtv_wifi import constants, ha_state_detection_rules_validator
+from androidtv_wifi.firetv.firetv_sync import FireTVSync
 from . import patchers
 
 
@@ -170,7 +170,7 @@ class TestFireTVSyncPython(unittest.TestCase):
 
     def assertUpdate(self, get_properties, update):
         """Check that the results of the `update` method are as expected."""
-        with patch("androidtv.firetv.firetv_sync.FireTVSync.get_properties", return_value=get_properties):
+        with patch("androidtv_wifi.firetv.firetv_sync.FireTVSync.get_properties", return_value=get_properties):
             self.assertTupleEqual(self.ftv.update(), update)
 
     def test_state_detection(self):

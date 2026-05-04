@@ -4,9 +4,9 @@ import unittest
 
 sys.path.insert(0, "..")
 
-from androidtv import constants
-from androidtv.androidtv.base_androidtv import BaseAndroidTV
-from androidtv.firetv.base_firetv import BaseFireTV
+from androidtv_wifi import constants
+from androidtv_wifi.androidtv.base_androidtv import BaseAndroidTV
+from androidtv_wifi.firetv.base_firetv import BaseFireTV
 
 
 class TestBaseTV(unittest.TestCase):

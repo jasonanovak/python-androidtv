@@ -9,9 +9,9 @@ except ImportError:
 
 sys.path.insert(0, "..")
 
-from androidtv import constants, ha_state_detection_rules_validator
-from androidtv.androidtv.androidtv_sync import AndroidTVSync
-from androidtv.basetv.basetv_sync import BaseTVSync
+from androidtv_wifi import constants, ha_state_detection_rules_validator
+from androidtv_wifi.androidtv.androidtv_sync import AndroidTVSync
+from androidtv_wifi.basetv.basetv_sync import BaseTVSync
 from . import patchers
 
 

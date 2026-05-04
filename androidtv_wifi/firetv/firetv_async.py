@@ -1,18 +1,19 @@
-"""Communicate with an Android TV device via ADB over a network.
+"""Communicate with an Amazon Fire TV device via ADB over a network.
 
 ADB Debugging must be enabled.
 """
 
 import logging
 
-from .base_androidtv import BaseAndroidTV
+from .base_firetv import BaseFireTV
+from .. import constants
 from ..basetv.basetv_async import BaseTVAsync
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
-    """Representation of an Android TV device.
+class FireTVAsync(BaseTVAsync, BaseFireTV):
+    """Representation of an Amazon Fire TV device.
 
     Parameters
     ----------
@@ -42,38 +43,50 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         adb_server_port=5037,
         state_detection_rules=None,
         signer=None,
+        connection_type=constants.DEFAULT_CONNECTION_TYPE,
     ):  # pylint: disable=super-init-not-called
-        BaseTVAsync.__init__(self, host, port, adbkey, adb_server_ip, adb_server_port, state_detection_rules, signer)
+        BaseTVAsync.__init__(
+            self,
+            host,
+            port,
+            adbkey,
+            adb_server_ip,
+            adb_server_port,
+            state_detection_rules,
+            signer,
+            connection_type=connection_type,
+        )
 
     @classmethod
     def from_base(cls, base_tv):
-        """Construct an `AndroidTVAsync` object from a `BaseTVAsync` object.
+        """Construct a `FireTVAsync` object from a `BaseTVAsync` object.
 
         Parameters
         ----------
         base_tv : BaseTVAsync
-            The object that will be converted to an `AndroidTVAsync` object
+            The object that will be converted to a `FireTVAsync` object
 
         Returns
         -------
-        atv : AndroidTVAsync
-            The constructed `AndroidTVAsync` object
+        ftv : FireTVAsync
+            The constructed `FireTVAsync` object
 
         """
         # pylint: disable=protected-access
-        atv = cls(
+        ftv = cls(
             base_tv.host,
             base_tv.port,
             base_tv.adbkey,
             base_tv.adb_server_ip,
             base_tv.adb_server_port,
             base_tv._state_detection_rules,
+            connection_type=base_tv.connection_type,
         )
-        atv._adb = base_tv._adb
-        atv.device_properties = base_tv.device_properties
-        atv.installed_apps = base_tv.installed_apps
-        atv.max_volume = base_tv.max_volume
-        return atv
+        ftv._adb = base_tv._adb
+        ftv.device_properties = base_tv.device_properties
+        ftv.installed_apps = base_tv.installed_apps
+        ftv.max_volume = base_tv.max_volume
+        return ftv
 
     # ======================================================================= #
     #                                                                         #
@@ -86,7 +99,7 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         Parameters
         ----------
         get_running_apps : bool
-            Whether or not to get the :meth:`~androidtv.androidtv.androidtv_async.AndroidTVAsync.running_apps` property
+            Whether or not to get the :meth:`~androidtv.firetv.firetv_sync.FireTVSync.running_apps` property
         lazy : bool
             Whether or not to continue retrieving properties if the device is off or the screensaver is running
 
@@ -98,41 +111,23 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
             The current running app
         running_apps : list
             A list of the running apps if ``get_running_apps`` is True, otherwise the list ``[current_app]``
-        audio_output_device : str
-            The current audio playback device
-        is_volume_muted : bool
-            Whether or not the volume is muted
-        volume_level : float
-            The volume level (between 0 and 1)
+        hdmi_input : str, None
+            The HDMI input, or ``None`` if it could not be determined
 
         """
         # Get the properties needed for the update
         (
             screen_on,
             awake,
-            audio_state,
             wake_lock_size,
             current_app,
             media_session_state,
-            audio_output_device,
-            is_volume_muted,
-            volume,
             running_apps,
             hdmi_input,
         ) = await self.get_properties(get_running_apps=get_running_apps, lazy=lazy)
 
         return self._update(
-            screen_on,
-            awake,
-            audio_state,
-            wake_lock_size,
-            current_app,
-            media_session_state,
-            audio_output_device,
-            is_volume_muted,
-            volume,
-            running_apps,
-            hdmi_input,
+            screen_on, awake, wake_lock_size, current_app, media_session_state, running_apps, hdmi_input
         )
 
     # ======================================================================= #
@@ -146,7 +141,7 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         Parameters
         ----------
         get_running_apps : bool
-            Whether or not to get the :meth:`~androidtv.androidtv.androidtv_async.AndroidTVAsync.running_apps` property
+            Whether or not to get the :meth:`~androidtv.firetv.firetv_async.FireTVAsync.running_apps` property
         lazy : bool
             Whether or not to continue retrieving properties if the device is off or the screensaver is running
 
@@ -156,20 +151,12 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
             Whether or not the device is on, or ``None`` if it was not determined
         awake : bool, None
             Whether or not the device is awake (screensaver is not running), or ``None`` if it was not determined
-        audio_state : str, None
-            The audio state, as determined from "dumpsys audio", or ``None`` if it was not determined
         wake_lock_size : int, None
             The size of the current wake lock, or ``None`` if it was not determined
         current_app : str, None
             The current app property, or ``None`` if it was not determined
         media_session_state : int, None
             The state from the output of ``dumpsys media_session``, or ``None`` if it was not determined
-        audio_output_device : str, None
-            The current audio playback device, or ``None`` if it was not determined
-        is_volume_muted : bool, None
-            Whether or not the volume is muted, or ``None`` if it was not determined
-        volume : int, None
-            The absolute volume level, or ``None`` if it was not determined
         running_apps : list, None
             A list of the running apps, or ``None`` if it was not determined
         hdmi_input : str, None
@@ -177,34 +164,19 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
 
         """
         screen_on, awake, wake_lock_size = await self.screen_on_awake_wake_lock_size()
-
         if lazy and not (screen_on and awake):
-            return screen_on, awake, None, wake_lock_size, None, None, None, None, None, None, None
+            return screen_on, awake, wake_lock_size, None, None, None, None
 
-        audio_state = await self.audio_state()
         current_app, media_session_state = await self.current_app_media_session_state()
-        audio_output_device, is_volume_muted, volume, _ = await self.stream_music_properties()
 
         if get_running_apps:
             running_apps = await self.running_apps()
         else:
-            running_apps = [current_app] if current_app else None
+            running_apps = None
 
         hdmi_input = await self.get_hdmi_input()
 
-        return (
-            screen_on,
-            awake,
-            audio_state,
-            wake_lock_size,
-            current_app,
-            media_session_state,
-            audio_output_device,
-            is_volume_muted,
-            volume,
-            running_apps,
-            hdmi_input,
-        )
+        return screen_on, awake, wake_lock_size, current_app, media_session_state, running_apps, hdmi_input
 
     async def get_properties_dict(self, get_running_apps=True, lazy=True):
         """Get the properties needed for Home Assistant updates and return them as a dictionary.
@@ -212,27 +184,23 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         Parameters
         ----------
         get_running_apps : bool
-            Whether or not to get the :meth:`~androidtv.androidtv.androidtv_async.AndroidTVAsync.running_apps` property
+            Whether or not to get the :meth:`~androidtv.firetv.firetv_async.FireTVAsync.running_apps` property
         lazy : bool
             Whether or not to continue retrieving properties if the device is off or the screensaver is running
 
         Returns
         -------
         dict
-            A dictionary with keys ``'screen_on'``, ``'awake'``, ``'wake_lock_size'``, ``'current_app'``,
-            ``'media_session_state'``, ``'audio_state'``, ``'audio_output_device'``, ``'is_volume_muted'``, ``'volume'``, ``'running_apps'``, and ``'hdmi_input'``
+             A dictionary with keys ``'screen_on'``, ``'awake'``, ``'wake_lock_size'``, ``'current_app'``,
+             ``'media_session_state'``, ``'running_apps'``, and ``'hdmi_input'``
 
         """
         (
             screen_on,
             awake,
-            audio_state,
             wake_lock_size,
             current_app,
             media_session_state,
-            audio_output_device,
-            is_volume_muted,
-            volume,
             running_apps,
             hdmi_input,
         ) = await self.get_properties(get_running_apps=get_running_apps, lazy=lazy)
@@ -240,13 +208,9 @@ class AndroidTVAsync(BaseTVAsync, BaseAndroidTV):
         return {
             "screen_on": screen_on,
             "awake": awake,
-            "audio_state": audio_state,
             "wake_lock_size": wake_lock_size,
             "current_app": current_app,
             "media_session_state": media_session_state,
-            "audio_output_device": audio_output_device,
-            "is_volume_muted": is_volume_muted,
-            "volume": volume,
             "running_apps": running_apps,
             "hdmi_input": hdmi_input,
         }
